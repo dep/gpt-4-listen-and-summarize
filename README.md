@@ -1,6 +1,6 @@
 # gpt-4-listen-and-summarize
 
-This Ruby script will watch a folder for new text files, summarizes them, and save them to a different folder.
+This Ruby script will watch a folder for new text files, summarizes them with GPT-4, and save them to a different folder.
 
 Does the work of breaking down very large text files into multiple smaller chunks (to get around the API's "max length") and stitching together the responses for you.
 
