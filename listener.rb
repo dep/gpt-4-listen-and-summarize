@@ -3,28 +3,27 @@ require "net/http"
 require "uri"
 require "json"
 
-directory_to_watch = "/Users/dep/Downloads/to-transcribe"
-directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
-api_key = ENV["OPENAI_API_KEY"]
+@directory_to_watch = "/Users/dep/Downloads/to-transcribe"
+@directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
+@api_key = ENV["OPENAI_API_KEY"]
 
 def generate_file_name
   Time.now.strftime("%Y-%m-%d-%H-%M-%S") + ".md"
 end
 
-def request_gpt4(chunk, api_key)
-  puts "request gpt4"
+def request_gpt4(chunk)
   uri = URI("https://api.openai.com/v1/chat/completions")
   request = Net::HTTP::Post.new(uri)
-  request["Authorization"] = "Bearer #{api_key}"
+  request["Authorization"] = "Bearer #{@api_key}"
   request["Content-Type"] = "application/json"
   request.body = JSON.dump({
     "messages" => [
       { "role": "system", "content": "You are a helpful assistant that transcribes large text into summaries. Really expound on your summaries with several detailed paragraphs, pulling out key moments in the text." },
-      { "role": "user", "content": "Please summarize this using several long paragraphs:\n\n #{chunk}." },
+      { "role": "user", "content": "Please summarize this using several long paragraphs. Please do not end with a sentence fragment:\n\n #{chunk}." },
     ],
     "model" => "gpt-4",
     "temperature" => 0.5,
-    "max_tokens" => 500,
+    "max_tokens" => 350,
   })
 
   puts "calling API with a chunk"
@@ -40,16 +39,15 @@ def split_content(content)
   content.scan(/.{1,4800}/)
 end
 
-def process_file(file_path, api_key)
-  puts "process_file"
+def process_file(file_path)
   content = File.read(file_path).gsub(/[\r\n]+/, " ")
   chunks = split_content(content)
 
   # In the process_file method
   gpt_responses = chunks.map do |chunk|
-    puts "Sending chunk to GPT-4 API: #{chunk}"
-    response = request_gpt4(chunk, api_key)
-    puts "Received GPT-4 API response: #{response}"
+    puts "Sending chunk to GPT-4 API"
+    response = request_gpt4(chunk)
+    puts "Received GPT-4 API response:\n#{response}"
     response
   end
 
@@ -83,18 +81,18 @@ def process_file(file_path, api_key)
   formatted_content = metadata + result_content
 
   # save file to disk
-  File.write("#{directory_to_write}/#{file_name}", formatted_content)
+  File.write(File.join(@directory_to_write, file_name), formatted_content)
   puts "Done"
 end
 
-listener = Listen.to(directory_to_watch) do |modified, added, removed|
+listener = Listen.to(@directory_to_watch) do |modified, added, removed|
   added.each do |added_file|
     if File.extname(added_file) == ".txt"
-      process_file(added_file, api_key)
+      process_file(added_file)
     end
   end
 end
 
-puts "listening for files in #{directory_to_watch}"
+puts "listening for files in #{@directory_to_watch}"
 listener.start
 sleep
