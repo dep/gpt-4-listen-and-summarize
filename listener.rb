@@ -23,7 +23,7 @@ def request_gpt4(chunk)
     ],
     "model" => "gpt-4",
     "temperature" => 0.5,
-    "max_tokens" => 350,
+    "max_tokens" => 400,
   })
 
   puts "calling API with a chunk"
@@ -47,7 +47,7 @@ def process_file(file_path)
   gpt_responses = chunks.map do |chunk|
     puts "Sending chunk to GPT-4 API"
     response = request_gpt4(chunk)
-    puts "Received GPT-4 API response:\n#{response}"
+    puts "Received chunk's GPT-4 API response"
     response
   end
 
@@ -55,7 +55,6 @@ def process_file(file_path)
   puts "Combining GPT-4 responses"
   result_content = gpt_responses.map do |response|
     if response["choices"] && response["choices"][0] && response["choices"][0]["message"] && response["choices"][0]["message"]["content"]
-      puts "GPT-4 response: #{response["choices"][0]["message"]["content"]}"
       response["choices"][0]["message"]["content"]
     else
       puts "Unexpected GPT-4 response: #{response}"
@@ -72,7 +71,7 @@ def process_file(file_path)
     create_date: #{file_name.gsub(".md", "")}
     ---
 
-    Topics:: [[Journal]], [[GPT-4 Summaries]]
+    Topics:: [[Journal]], [[GPT Summaries]]
 
     ---
 
