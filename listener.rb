@@ -3,13 +3,15 @@ require "net/http"
 require "uri"
 require "json"
 
+# options:
 @directory_to_watch = "/Users/dep/Downloads/to-transcribe"
 @directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
+@append_original_text = true
 @api_key = ENV["OPENAI_API_KEY"]
 # use 'gpt-4', 'gpt-3.5-turbo', etc
 @model = "gpt-3.5-turbo"
-@append_original_text = true
 
+# code:
 def generate_file_name
   Time.now.strftime("%Y-%m-%d-%H-%M-%S") + ".md"
 end
