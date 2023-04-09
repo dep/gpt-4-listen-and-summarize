@@ -6,12 +6,14 @@ require "json"
 @directory_to_watch = "/Users/dep/Downloads/to-transcribe"
 @directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
 @api_key = ENV["OPENAI_API_KEY"]
+# use 'gpt-4', 'gpt-3.5-turbo', etc
+@model = "gpt-3.5-turbo"
 
 def generate_file_name
   Time.now.strftime("%Y-%m-%d-%H-%M-%S") + ".md"
 end
 
-def request_gpt4(chunk)
+def request_gpt(chunk)
   uri = URI("https://api.openai.com/v1/chat/completions")
   request = Net::HTTP::Post.new(uri)
   request["Authorization"] = "Bearer #{@api_key}"
@@ -21,7 +23,7 @@ def request_gpt4(chunk)
       { "role": "system", "content": "You are a helpful assistant that transcribes large text into summaries. Really expound on your summaries with several detailed paragraphs, pulling out key moments in the text." },
       { "role": "user", "content": "Please summarize this using several long paragraphs. Please do not end with a sentence fragment:\n\n #{chunk}." },
     ],
-    "model" => "gpt-4",
+    "model" => @model,
     "temperature" => 0.5,
     "max_tokens" => 400,
   })
@@ -45,19 +47,19 @@ def process_file(file_path)
 
   # In the process_file method
   gpt_responses = chunks.map do |chunk|
-    puts "Sending chunk to GPT-4 API"
-    response = request_gpt4(chunk)
-    puts "Received chunk's GPT-4 API response"
+    puts "Sending chunk to #{@model} API"
+    response = request_gpt(chunk)
+    puts "Received chunk's #{@model} API response"
     response
   end
 
-  # Before combining the GPT-4 responses
-  puts "Combining GPT-4 responses"
+  # Before combining the responses
+  puts "Combining #{@model} responses"
   result_content = gpt_responses.map do |response|
     if response["choices"] && response["choices"][0] && response["choices"][0]["message"] && response["choices"][0]["message"]["content"]
       response["choices"][0]["message"]["content"]
     else
-      puts "Unexpected GPT-4 response: #{response}"
+      puts "Unexpected #{@model} response: #{response}"
       ""
     end
   end.join
