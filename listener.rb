@@ -8,6 +8,7 @@ require "json"
 @api_key = ENV["OPENAI_API_KEY"]
 # use 'gpt-4', 'gpt-3.5-turbo', etc
 @model = "gpt-3.5-turbo"
+@append_original_text = true
 
 def generate_file_name
   Time.now.strftime("%Y-%m-%d-%H-%M-%S") + ".md"
@@ -79,7 +80,11 @@ def process_file(file_path)
 
   METADATA
 
-  formatted_content = metadata + result_content + "\n\n---\n\nOriginal Text:\n\n" + content
+  if @append_original_text
+    formatted_content = metadata + result_content + "\n\n---\n\nOriginal Text:\n\n" + content
+  else
+    formatted_content = metadata + result_content
+  end
 
   # save file to disk
   File.write(File.join(@directory_to_write, file_name), formatted_content)
