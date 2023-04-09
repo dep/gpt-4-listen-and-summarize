@@ -3,8 +3,8 @@ require "net/http"
 require "uri"
 require "json"
 
-@directory_to_watch = "/Users/dep/Downloads/to-transcribe"
-@directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
+@directory_to_watch = "/some/path/to-transcribe"
+@directory_to_write = "/some/path/output/"
 @api_key = ENV["OPENAI_API_KEY"]
 # use 'gpt-4', 'gpt-3.5-turbo', etc
 @model = "gpt-3.5-turbo"
@@ -20,8 +20,8 @@ def request_gpt(chunk)
   request["Content-Type"] = "application/json"
   request.body = JSON.dump({
     "messages" => [
-      { "role": "system", "content": "You are a helpful assistant that transcribes large text into summaries. Really expound on your summaries with several detailed paragraphs, pulling out key moments in the text." },
-      { "role": "user", "content": "Please summarize this using several long paragraphs. Please do not end with a sentence fragment:\n\n #{chunk}." },
+      { "role": "system", "content": "You are a helpful assistant that transcribes large text into summaries. Expound on your summaries with detailed paragraphs, pulling out key moments in the text. Keep your responses under 2000 characters" },
+      { "role": "user", "content": "Please summarize this into a few long paragraphs, under 2000 characters total:\n\n #{chunk}." },
     ],
     "model" => @model,
     "temperature" => 0.5,
