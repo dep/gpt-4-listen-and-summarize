@@ -3,8 +3,8 @@ require "net/http"
 require "uri"
 require "json"
 
-@directory_to_watch = "/some/path/to-transcribe"
-@directory_to_write = "/some/path/output/"
+@directory_to_watch = "/Users/dep/Downloads/to-transcribe"
+@directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
 @api_key = ENV["OPENAI_API_KEY"]
 # use 'gpt-4', 'gpt-3.5-turbo', etc
 @model = "gpt-3.5-turbo"
@@ -79,7 +79,7 @@ def process_file(file_path)
 
   METADATA
 
-  formatted_content = metadata + result_content
+  formatted_content = metadata + result_content + "\n\n---\n\nOriginal Text:\n\n" + content
 
   # save file to disk
   File.write(File.join(@directory_to_write, file_name), formatted_content)
