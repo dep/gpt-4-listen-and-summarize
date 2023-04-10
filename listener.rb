@@ -1,19 +1,22 @@
 require "listen"
+require 'daemons'
 require "net/http"
 require "uri"
 require "json"
 
 # options:
-@directory_to_watch = "/Users/dep/Downloads/to-transcribe"
-@directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
+@directory_to_watch = "/Users/dpeck/to-transcribe/"
+@directory_to_write = "/Users/dpeck/obsidian/Journal/"
 @append_original_text = true
+
 @api_key = ENV["OPENAI_API_KEY"]
+
 # use 'gpt-4', 'gpt-3.5-turbo', etc
 @model = "gpt-3.5-turbo"
 
 # code:
 def generate_file_name
-  Time.now.strftime("%Y-%m-%d-%H-%M-%S") + ".md"
+  Time.now.strftime("%Y-%m-%d %H-%M-%S") + ".md"
 end
 
 def request_gpt(chunk)
@@ -28,7 +31,7 @@ def request_gpt(chunk)
     ],
     "model" => @model,
     "temperature" => 0.5,
-    "max_tokens" => 400,
+    "max_tokens" => 350,
   })
 
   puts "calling API with a chunk"
@@ -87,20 +90,37 @@ def process_file(file_path)
   else
     formatted_content = metadata + result_content
   end
-
   # save file to disk
   File.write(File.join(@directory_to_write, file_name), formatted_content)
   puts "Done"
 end
 
-listener = Listen.to(@directory_to_watch) do |modified, added, removed|
-  added.each do |added_file|
-    if File.extname(added_file) == ".txt"
-      process_file(added_file)
-    end
+def daemon_running?(pid_file_path)
+  if File.exist?(pid_file_path)
+    pid = File.read(pid_file_path).to_i
+    Process.kill(0, pid)
+    true
+  else
+    false
   end
+rescue Errno::ESRCH, Errno::ENOENT
+  false
 end
 
-puts "listening for files in #{@directory_to_watch}"
-listener.start
-sleep
+pid_file_path = File.join('/tmp', 'gpt-4-listen-and-summarize.pid')
+if daemon_running?(pid_file_path)
+  puts "Daemon process already running"
+else
+  listener = Listen.to(@directory_to_watch) do |modified, added, removed|
+    added.each do |added_file|
+      if File.extname(added_file) == ".txt"
+        process_file(added_file)
+      end
+    end
+  end
+
+  Daemons.run_proc('gpt-4-listen-and-summarize', :pidfile => pid_file_path) do
+    listener.start
+    sleep
+  end
+end
