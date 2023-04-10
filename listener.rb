@@ -6,8 +6,9 @@ require "json"
 
 # options:
 @directory_to_watch = "/Users/dpeck/to-transcribe/"
-@directory_to_write = "/Users/dpeck/obsidian/Journal/"
+@directory_to_write = "/Users/dpeck/obsidian/"
 @append_original_text = true
+@use_daemon = true
 
 @api_key = ENV["OPENAI_API_KEY"]
 
@@ -79,7 +80,7 @@ def process_file(file_path)
     create_date: #{file_name.gsub(".md", "")}
     ---
 
-    Topics:: [[Journal]], [[GPT Summaries]]
+    Topics:: [[GPT Summaries]]
 
     ---
 
@@ -95,32 +96,38 @@ def process_file(file_path)
   puts "Done"
 end
 
-def daemon_running?(pid_file_path)
-  if File.exist?(pid_file_path)
-    pid = File.read(pid_file_path).to_i
-    Process.kill(0, pid)
-    true
-  else
-    false
-  end
-rescue Errno::ESRCH, Errno::ENOENT
-  false
-end
-
-pid_file_path = File.join('/tmp', 'gpt-4-listen-and-summarize.pid')
-if daemon_running?(pid_file_path)
-  puts "Daemon process already running"
-else
-  listener = Listen.to(@directory_to_watch) do |modified, added, removed|
-    added.each do |added_file|
-      if File.extname(added_file) == ".txt"
-        process_file(added_file)
-      end
+listener = Listen.to(@directory_to_watch) do |modified, added, removed|
+  added.each do |added_file|
+    if File.extname(added_file) == ".txt"
+      process_file(added_file)
     end
   end
+end
 
-  Daemons.run_proc('gpt-4-listen-and-summarize', :pidfile => pid_file_path) do
-    listener.start
-    sleep
+if @use_daemon
+  def daemon_running?(pid_file_path)
+    if File.exist?(pid_file_path)
+      pid = File.read(pid_file_path).to_i
+      Process.kill(0, pid)
+      true
+    else
+      false
+    end
+  rescue Errno::ESRCH, Errno::ENOENT
+    false
   end
+
+  pid_file_path = "/tmp/gpt-4-listen-and-summarize.pid"
+  if daemon_running?(pid_file_path)
+    puts "Daemon process already running"
+  else
+    Daemons.run_proc('gpt-4-listen-and-summarize', :pidfile => pid_file_path) do
+      listener.start
+      sleep
+    end
+  end
+else
+  puts "Listener started"
+  listener.start
+  sleep
 end
