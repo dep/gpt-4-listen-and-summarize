@@ -5,8 +5,9 @@ require "uri"
 require "json"
 
 # options:
-@directory_to_watch = "/Users/dpeck/to-transcribe/"
-@directory_to_write = "/Users/dpeck/obsidian/"
+@root_directory = "/Users/dpeck"
+@directory_to_watch = "#{@root_directory}/to-transcribe/"
+@directory_to_write = "#{@root_directory}/obsidian/"
 @append_original_text = true
 @use_daemon = true
 
@@ -117,7 +118,8 @@ if @use_daemon
     false
   end
 
-  pid_file_path = "/tmp/gpt-4-listen-and-summarize.pid"
+  pid_file_path = File.join(@root_directory, 'gpt-4-listen-and-summarize.pid')
+
   if daemon_running?(pid_file_path)
     puts "Daemon process already running"
   else
