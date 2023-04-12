@@ -4,8 +4,8 @@ require "uri"
 require "json"
 
 # options:
-@directory_to_watch = "/Users/dep/Downloads/to-transcribe"
-@directory_to_write = "/Users/dep/Google Drive/Obsidian/Brain 2.0/Journal"
+@directory_to_watch = "/some/input/directory"
+@directory_to_write = "/some/output/directory"
 @append_original_text = true
 @api_key = ENV["OPENAI_API_KEY"]
 # use 'gpt-4', 'gpt-3.5-turbo', etc
