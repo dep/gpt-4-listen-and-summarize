@@ -9,8 +9,9 @@ I save mine right to my Obsidian vault but you might have other use cases.
 ## Setup
 
 1. `gem install listen`
-2. You'll need an [OpenAI API key](https://platform.openai.com/account/api-keys), set as an env variable (OPENAI-API-KEY)
-3. `ruby listen.rb`
+2. `gem install daemons`
+3. You'll need an [OpenAI API key](https://platform.openai.com/account/api-keys), set as an env variable (OPENAI-API-KEY)
+4. `ruby listen.rb`
 
 Build using Ruby 3.2.1
 
