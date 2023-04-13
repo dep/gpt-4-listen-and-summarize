@@ -5,7 +5,7 @@ require "uri"
 require "json"
 
 # options:
-@root_directory = "/Users/dpeck"
+@root_directory = Dir.home
 @directory_to_watch = "#{@root_directory}/to-transcribe/"
 @directory_to_write = "#{@root_directory}/obsidian/"
 @append_original_text = true
